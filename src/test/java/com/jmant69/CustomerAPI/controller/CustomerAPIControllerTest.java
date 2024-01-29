@@ -1,8 +1,8 @@
 package com.jmant69.CustomerAPI.controller;
 
-import org.hamcrest.Matcher;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -12,6 +12,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jmant69.CustomerAPI.DTO.CustomerDTO;
 import com.jmant69.CustomerAPI.entity.Customer;
 import com.jmant69.CustomerAPI.exception.CustomerNotFoundException;
 import com.jmant69.CustomerAPI.service.CustomerService;
@@ -24,7 +25,9 @@ public class CustomerAPIControllerTest {
     @Autowired private MockMvc mockMvc;
     @Autowired private ObjectMapper objectMapper;
     @MockBean private CustomerService service;
- 
+    @MockBean private ModelMapper modelMapper;
+    ModelMapper modelMapperMock = new ModelMapper();
+    
     @Test
     public void testAddShouldReturn201NullId() throws Exception {
         Customer newCustomer = new Customer();
@@ -33,10 +36,41 @@ public class CustomerAPIControllerTest {
        
         String requestBody = objectMapper.writeValueAsString(newCustomer);
         
+        Mockito.when(service.add(newCustomer)).thenReturn(newCustomer);
+
+        Mockito.when(modelMapper.map(newCustomer, CustomerDTO.class)).thenReturn(modelMapperMock.map(newCustomer, CustomerDTO.class));
+        
         mockMvc.perform(MockMvcRequestBuilders.post(END_POINT_PATH).contentType("application/json")
                 .content(requestBody))
+        		.andExpect(MockMvcResultMatchers.content().contentType("application/json"))
                 .andExpect(MockMvcResultMatchers.status().isCreated())
                 .andExpect(MockMvcResultMatchers.header().string("Location", "/customer/1"))
+                .andDo(MockMvcResultHandlers.print())
+        ;
+    }
+    
+    @Test
+    public void testGetShouldReturn200OK() throws Exception {
+    	Long customerRef = 1L;
+
+    	String requestUri = END_POINT_PATH + "/" + customerRef;
+    	
+    	Customer newCustomer = new Customer();
+    	newCustomer.setCustomerRef(customerRef);
+    	String expectedName = "John Smith";
+		newCustomer.setCustomerName(expectedName);
+    	newCustomer.setAddressLine1("22 Acacia Ave");
+    	    	
+        String requestBody = objectMapper.writeValueAsString(newCustomer);
+        
+        Mockito.when(service.get(customerRef)).thenReturn(newCustomer);
+        Mockito.when(modelMapper.map(newCustomer, CustomerDTO.class)).thenReturn(modelMapperMock.map(newCustomer, CustomerDTO.class));
+        
+        mockMvc.perform(MockMvcRequestBuilders.get(requestUri).contentType("application/json")
+                .content(requestBody))
+        		.andExpect(MockMvcResultMatchers.content().contentType("application/json"))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.customerName").value(expectedName))
                 .andDo(MockMvcResultHandlers.print())
         ;
     }
@@ -47,7 +81,7 @@ public class CustomerAPIControllerTest {
         Long customerRef = 500L;
         String requestURI = END_POINT_PATH + "/" + customerRef;
      
-//        Mockito.when(service.get(customerRef).thenThrow(CustomerNotFoundException.class));
+        Mockito.when(service.get(customerRef)).thenThrow(CustomerNotFoundException.class);
      
         mockMvc.perform(MockMvcRequestBuilders.get(requestURI))
             .andExpect(MockMvcResultMatchers.status().isNotFound())

@@ -11,7 +11,8 @@ import com.jmant69.CustomerAPI.repository.CustomerRepository;
 
 @Service
 public class CustomerServiceImpl implements CustomerService{
-    @Autowired private CustomerRepository repo;
+    @Autowired 
+    private CustomerRepository repo;
     
     public Customer add(Customer customer) {
         return repo.save(customer);

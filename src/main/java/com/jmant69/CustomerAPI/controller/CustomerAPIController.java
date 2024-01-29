@@ -23,22 +23,17 @@ public class CustomerAPIController {
 
 	@Autowired
 	private CustomerService service;
-//    private ModelMapper modelMapper;
-
-	protected void CustomerApiController(CustomerService service, ModelMapper mapper) {
-		this.service = service;
-//        this.modelMapper = mapper;
-	}
+	
+    @Autowired
+    private ModelMapper modelMapper;
 
 	@PostMapping
 	public ResponseEntity<?> add(@RequestBody Customer customer) {
 		Customer persistedCustomer = service.add(customer);
 
-//	    CustomerDTO customerDto = entity2Dto(persistedCustomer);
+	    CustomerDTO customerDto = entity2Dto(persistedCustomer);
 
-//	    URI uri = URI.create("/customer/" + customerDto.getCustomerRef());
-
-		URI uri = URI.create("/customer/" + persistedCustomer.getCustomerRef());
+	    URI uri = URI.create("/customer/" + customerDto.getCustomerRef());
 
 		return ResponseEntity.created(uri).body(persistedCustomer);
 	}
@@ -47,15 +42,14 @@ public class CustomerAPIController {
 	public ResponseEntity<?> get(@PathVariable("id") Long id) {
 		try {
 			Customer customer = service.get(id);
-//	        return ResponseEntity.ok(entity2Dto(customer));
-			return ResponseEntity.ok(customer);
+	        return ResponseEntity.ok(entity2Dto(customer));
 		} catch (CustomerNotFoundException e) {
 			e.printStackTrace();
 			return ResponseEntity.notFound().build();
 		}
 	}
 
-//    private CustomerDTO entity2Dto(Customer entity) {
-//        return modelMapper.map(entity, CustomerDTO.class);
-//    }
+    private CustomerDTO entity2Dto(Customer entity) {
+        return modelMapper.map(entity, CustomerDTO.class);
+    }
 }
