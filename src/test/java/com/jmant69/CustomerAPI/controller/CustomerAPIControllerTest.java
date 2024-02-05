@@ -29,10 +29,11 @@ public class CustomerAPIControllerTest {
     ModelMapper modelMapperMock = new ModelMapper();
     
     @Test
-    public void testAddShouldReturn201NullId() throws Exception {
+    public void testAddShouldReturn201Created() throws Exception {
         Customer newCustomer = new Customer();
         newCustomer.setCustomerRef(1L);
-        newCustomer.setCustomerName("Jimmy");
+        String expectedValue = "Jimmy";
+		newCustomer.setCustomerName(expectedValue);
        
         String requestBody = objectMapper.writeValueAsString(newCustomer);
         
@@ -45,6 +46,7 @@ public class CustomerAPIControllerTest {
         		.andExpect(MockMvcResultMatchers.content().contentType("application/json"))
                 .andExpect(MockMvcResultMatchers.status().isCreated())
                 .andExpect(MockMvcResultMatchers.header().string("Location", "/customer/1"))
+				.andExpect(MockMvcResultMatchers.jsonPath("$.customerName").value(expectedValue))
                 .andDo(MockMvcResultHandlers.print())
         ;
     }

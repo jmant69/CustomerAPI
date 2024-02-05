@@ -1,7 +1,5 @@
 package com.jmant69.CustomerAPI.DTO;
 
-import com.jmant69.CustomerAPI.entity.Customer;
-
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
